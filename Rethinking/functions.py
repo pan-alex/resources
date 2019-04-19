@@ -47,15 +47,16 @@ def plot_counterfactual(data, trace, variables, parameters, intercept='a', hpdi=
     x_coef = parameters[0]
     x_space = np.linspace(x.min(), x.max(), 50)
     x_value = trace[x_coef] * x_space[:,None]
-    
+
     # Calculate value of other variables, holding them to the mean value.
-    controls = []
-    for item in variables[1:]: controls.append(data[item].mean())
+    controls = np.array(data[variables[1]].mean())
+    for item in variables[2:]: 
+        controls = np.hstack((controls, [data[item].mean()]))
     
     control_coefficients = []
     for item in parameters[1:]: control_coefficients.append(trace[item])
         
-    control_values = np.multiply(controls, control_coefficients)
+    control_values = np.dot(controls, control_coefficients)
     
     # Calculate the predicted mean.
     mu_predicted = trace[intercept] + x_value + control_values
